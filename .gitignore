@@ -1,0 +1,7 @@
+# Verilator output
+obj_dir/
+sim_out
+
+# Docs (for now)
+docs/
+
