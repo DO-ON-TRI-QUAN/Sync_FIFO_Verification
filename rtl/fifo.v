@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module synchronous_fifo #(parameter DEPTH=8, DATA_WIDTH=8) (
   input clk, rst_n,
   input w_en, r_en,
