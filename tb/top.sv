@@ -34,14 +34,43 @@ module sync_fifo_TB;
 
   initial begin
     clk = 0;
-    rst_n = 1;
+    rst_n = 0;
     w_en = 0; 
     r_en = 0;
     data_in = 0;
+
+    #10
+    rst_n = 1;
+    
+    w_en = 1;
+    r_en = 0;
+    data_in = DATA_WIDTH'($urandom);
+
+    #10
+    w_en = 0;
+    r_en = 1;  
+    
+    repeat(12) begin
+      #10
+      w_en = 1;
+      r_en = 0;
+      data_in = DATA_WIDTH'($urandom);
+    end  
+    
+    repeat(12) begin
+      #10
+      w_en = 0;
+      r_en = 1;
+      data_in = DATA_WIDTH'($urandom);
+    end    
+
+    #30
+    $finish;
   end
-  
+
   initial begin 
-    $dumpfile("dump.vcd"); $dumpvars;
+    $dumpfile("dump.vcd"); 
+    $dumpvars;
   end
 
 
