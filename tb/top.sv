@@ -11,8 +11,11 @@ module sync_fifo_TB;
   wire [DATA_WIDTH-1:0] data_out;
   wire full, empty;
   
-  // Queue to push data_in
-  // reg [DATA_WIDTH-1:0] wdata_q[$], wdata;
+  // Queue to push data_in and pop data_out (for checker)
+  reg [DATA_WIDTH-1:0] data_q[$];
+  
+  // Store popped data from queue for comparing
+  reg [DATA_WIDTH-1:0] data;
 
   // Instantiate DUT
   synchronous_fifo #(
@@ -39,26 +42,42 @@ module sync_fifo_TB;
     r_en = 0;
     data_in = 0;
 
-    #10
+    
+    @(posedge clk) 
+    #1
     rst_n = 1;
     
+    @(posedge clk) 
+    #1
     w_en = 1;
     r_en = 0;
     data_in = DATA_WIDTH'($urandom);
+    data_q.push_back(data_in);
 
-    #10
+    @(posedge clk) 
+    #1
     w_en = 0;
-    r_en = 1;  
+    r_en = 1; 
+    
+    @(posedge clk) 
+    #1 
+    data = data_q.pop_front();
+    if (data_out !== data)
+      $error("TIME = %0t: Comparison failed, expected data = %h, actual data_out = %h", $time, data, data_out);
+    else
+      $display("TIME = %0t: Comparison passed, expected data = %h, actual data_out = %h", $time, data, data_out);
     
     repeat(12) begin
-      #10
+      @(posedge clk) 
+      #1
       w_en = 1;
       r_en = 0;
       data_in = DATA_WIDTH'($urandom);
     end  
     
     repeat(12) begin
-      #10
+      #1
+      @(posedge clk) 
       w_en = 0;
       r_en = 1;
       data_in = DATA_WIDTH'($urandom);
