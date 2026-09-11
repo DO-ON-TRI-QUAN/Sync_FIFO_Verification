@@ -1,0 +1,55 @@
+1. Overview
+  - A synchronous FIFO (First-In-First-Out). Default DEPTH and DATA_WIDTH of 8. Explicit full and empty flag. No underflow/overflow flag. The size of both write and read pointer is increased by 1 bit for checking 
+actual full condition.
+
+2. Parameter
+  - DEPTH: 8 (number of slots of the FIFO)
+  - DATA_WIDTH: 8 (the size of the data that each slot can hold)
+
+3. Interface
+  - input clk, rst_n: clock and negative reset.
+  - input w_en, r_en: request to start write or read operation. 
+  - input [DATA_WIDTH-1:0] data_in: input data for write operation, same size as DATA_WIDTH.
+
+  - output reg [DATA_WIDTH-1:0] data_out: output data for read operation, same size as DATA_WIDTH.
+  - output full, empty: full and empty flag.
+
+4. Core function and behaviour
+  - Data is written and read in the order of First-In-First-Out, same clock domain.
+
+  - When w_en is asserted, the data is written into the slot that the write pointer is currently pointing to, then advance the write pointer by 1.
+  - If the FIFO is currently full, then the write operation doesnt happen (do nothing, no data write or pointer increment).
+  - If write pointer is at the last slot (DEPTH-1), and w_en is asserted while FIFO isnt full, then the pointer will wrap around and go back to the first slot.
+
+  - When r_en is asserted, the data is read in the slot that the read pointer is currently pointing to, then advance the read pointer by 1.
+  - If the FIFO is currently empty, then the read operation doesnt happen (do nothing, no data read or pointer increment).
+  - If read pointer is at the last slot (DEPTH-1), and r_en is asserted while FIFO isnt empty, then the pointer will wrap around and go back to the first slot.
+
+  - Empty condition: empty flag is asserted if w_ptr = r_ptr.
+  - Full condition: full flag is asserted if N lower (index) bits are equal, but the MSB of both is different.
+
+  - Visual example:
+
+        0     1     2     3     4     5     6     7
+      +-----+-----+-----+-----+-----+-----+-----+-----+
+      |     |     |     |     |     |     |     |     |
+      +-----+-----+-----+-----+-----+-----+-----+-----+
+                          ^           ^
+                         w_ptr       r_ptr
+                        (slot 3)    (slot 5)
+
+    + Assuming w_ptr = 1 011, r_ptr = 0 101.
+    + As we can see, the MSB (left most) bit of w_ptr and r_ptr isnt the same (1 vs 0), so that mean both pointers are in different laps (w_ptr wrapped around once while r_ptr hasnt yet). It also mean the FIFO is currently neither full or empty.
+    + If w_ptr moves 2 times, 1 011 -> 1 101, then last 3 bits of w_ptr and r_ptr are the same, but MSB is still different. Now the FIFO is seen as full and no further write operation is accepted.
+    + if r_ptr moves 8 times, 0 101 -> 1 101, then both the MSB and remaining bits of w_ptr and r_ptr are the same. In this case, the FIFO is now empty (no new data to read)
+
+  - Write and read operation can happen at the same time in the same clock cycle. However, depend on the current status (full/empty), one of them could not really occur.
+  - And the FIFO can not be both empty and full at the same time, so if there are both write and read operation, at least one of them should occur.
+
+5. Timing 
+  - Negative reset (0 = reset, 1 = no reset)
+  - Full and empty flag should be combinational for immediate feedback
+
+6. Corner cases and open questions
+  - If the FIFO is currently full, and both write and read operation happen, can both actually occur? 
+What about empty, can both occur? (check online/popular resource?, check RTL implementation?)

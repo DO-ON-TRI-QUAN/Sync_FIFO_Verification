@@ -1,0 +1,70 @@
+1. Parameters 
+  - DEPTH = 8, DATA_WIDTH = 8
+
+2. Verification goals
+  - Confirm FIFO preserves correct ordering
+  - Confirm full/empty flags assert/deassert correctly in all reachable pointer states
+  - Confirm write-while-full and read-while-empty are safely rejected (no corruption, no pointer movement)
+  - Confirm simultaneous read + write behaves correctly across all fullness states, including the open full + rw question (section 6 of specs.txt)
+  - Confirm reset brings FIFO to a known, empty state
+
+3. Testcases
+
+  3.1 Reset behavior
+    [ ] TC_RESET_01: after rst_n asserted, empty = 1, full = 0, w_ptr = r_ptr = 0
+    [ ] TC_RESET_02: reset asserted mid-operation (FIFO partial/full) correctly clears state
+    Priority: High 
+    Status: Not started
+
+  3.2 Basic write operation
+    [ ] TC_WR_01: single write when empty -> data stored, empty deasserts, w_ptr advances
+    [ ] TC_WR_02: write pointer wraps from slot 7 -> slot 0
+    [ ] TC_WR_03: write while full -> no data change, no pointer movement, full stays asserted
+    Priority: High 
+    Status: Not started
+
+   3.3 Basic read operation
+    [ ] TC_RD_01: single read when not empty -> correct data returned in FIFO order, r_ptr advances
+    [ ] TC_RD_02: read pointer wraps from slot 7 -> slot 0
+    [ ] TC_RD_03: read while empty -> no data change, no pointer movement, empty stays asserted
+    Priority: High
+    Status: Not started
+
+   3.4 Full / Empty flag correctness
+    [ ] TC_FLAG_01: empty asserted immediately after reset
+    [ ] TC_FLAG_02: empty deasserts after first write
+    [ ] TC_FLAG_03: full asserts exactly when DEPTH (8) writes have occurred with no reads
+    [ ] TC_FLAG_04: full deasserts after a single read from full state
+    [ ] TC_FLAG_05: flags stay correctly deasserted throughout a fill-drain-fill cycle (not just endpoints)
+    Priority: High
+    Status: Not started
+
+   3.5 FIFO ordering / data integrity
+    [ ] TC_DATA_01: write N values, read N values, verify order and values match (basic FIFO property)
+    [ ] TC_DATA_02: interleaved writes/reads over many cycles, track expected queue in a scoreboard/model, compare against actual output continuously
+    Priority: High
+    Status: Not started
+
+   3.6 Simultaneous read + write
+    [ ] TC_SIMUL_01: simultaneous r/w when FIFO is neither full nor empty -> both occur normally
+    [ ] TC_SIMUL_02: simultaneous r/w when FIFO is empty -> write occurs, read does not (FIFO becomes non-empty)
+    [ ] TC_SIMUL_03: simultaneous r/w when FIFO is full -> OPEN QUESTION (see section 6 of specs.txt), resolve against RTL behavior first, then write test to confirm intended behavior
+    [ ] TC_SIMUL_04: back-to-back simultaneous r/w for several cycles while FIFO hovers near full/empty boundary
+    Priority: Med (until TC_SIMUL_03 resolved, then High)
+    Status: Blocked due to open question
+
+   3.7 Full traversal / stress-ish directed cases
+    [ ] TC_FULL_TRAVERSAL_01: fill completely, drain completely, repeat for 2-3 cycles, confirm pointers wrap correctly multiple times (to catch wrap-bit bugs)
+    [ ] TC_BOUNDARY_01: write pointer and read pointer land on same index but different lap (the full condition), explicit directed hit of the MSB-differs case
+    Priority: Med
+    Status: Not started
+
+4. Not covered / out-of-scope 
+   - No overflow/underflow error signaling 
+   - No almost-full / almost-empty flags
+   - No multi-clock / async FIFO behavior (this is sync only)
+   - No parameter sweeping across different DEPTH/DATA_WIDTH (fixed parameters)
+
+5. Open questions
+   - 3.6.3 (TC_SIMUL_03): simultaneous r/w when full, check RTL, decide expected behavior, update specs.txt + vplan
+

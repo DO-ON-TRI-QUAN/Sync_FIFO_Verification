@@ -1,0 +1,61 @@
+1. Goals
+- To prove that every meaningful combination of FIFO state and operation have been exercised
+
+2. Covergroup
+* NOTE *: the covergroup, coverpoint and bins names are mostly conceptual and do not directly reflect the actual naming practice
+
+  2.1 cg_fifo_state
+    Purpose: track FIFO occupancy (slot) state has hit meaningful regions, not just full/empty
+      coverpoint: curr_occupied_slots 
+        bins:
+          - EMPTY        (occupied == 0)
+          - ALMOST_EMPTY (occupied == 1)      
+          - MID          (1 < occupied < DEPTH-1)
+          - ALMOST_FULL  (occupied == DEPTH-1) 
+          - FULL         (occupied == DEPTH)
+
+  2.2 cg_operation
+    Purpose: track which operation was requested
+      coverpoint: {w_en, r_en}
+        bins:
+          - NONE       (w_en=0, r_en=0)
+          - WRITE_ONLY (w_en=1, r_en=0)
+          - READ_ONLY  (w_en=0, r_en=1)
+          - BOTH       (w_en=1, r_en=1)
+
+  2.3 cg_state_x_operation  (CROSS COVERAGE - the important one)
+    Purpose: confirm every operation was attempted in every relevant state, especially the edge states.
+
+      cross: fifo_state x operation
+        bins:
+          - EMPTY  x WRITE_ONLY   (basic write when empty)
+          - EMPTY  x READ_ONLY    (read-while-empty, rejected)
+          - EMPTY  x BOTH         (TC_SIMUL_02)
+          - FULL   x WRITE_ONLY   (write-while-full, rejected)
+          - FULL   x READ_ONLY    (basic read when full)
+          - FULL   x BOTH         (TC_SIMUL_03, the open question)
+          - MID    x BOTH         (TC_SIMUL_01)
+          - ALMOST_FULL  x WRITE_ONLY  (the write that fills it)
+          - ALMOST_EMPTY x READ_ONLY   (the read that empties it)
+
+  2.4 cg_pointer_wrap
+    Purpose: confirm both pointers have wrapped around (MSB toggled) at least once each, and ideally multiple times
+      coverpoint: w_ptr_msb_toggle_count
+        bins:
+          - w_ptr wrapped >= 1 time
+          - w_ptr wrapped >= 2 times (to catch possible bug on more than 1 wraps)
+          - (same for r_ptr)
+
+  2.5 cg_reset
+    Purpose: confirm reset was exercised in more than one FIFO state, not just at time 0.
+      coverpoint: fifo_state at moment of reset assertion
+        bins:
+          - reset while EMPTY  
+          - reset while MID
+          - reset while FULL
+
+3. Not covered / out-of-scope 
+  - No data value coverage. data_in values are seen as not very functionally significant for this project (because the FIFO just stores data from data_in)
+
+4. Open questions
+  - Once TC_SIMUL_03 (full + simultaneous r/w) is resolved, confirm whether that changes what "expected" coverage of FULL x BOTH actually means
