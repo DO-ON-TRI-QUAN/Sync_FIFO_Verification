@@ -43,7 +43,5 @@ module synchronous_fifo #(parameter DEPTH=8, DATA_WIDTH=8) (
   assign full = wrap_around & (w_ptr[PTR_WIDTH-1:0] == r_ptr[PTR_WIDTH-1:0]);
   
   //Empty condition: All bits of write and read pointers are same.
-  //assign empty = !wrap_around & (w_ptr[PTR_WIDTH-1:0] == r_ptr[PTR_WIDTH-1:0]);
-  //or
   assign empty = (w_ptr == r_ptr);
 endmodule
