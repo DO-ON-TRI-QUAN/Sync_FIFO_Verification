@@ -11,7 +11,11 @@ interface fifo_if #(
   logic w_en, r_en;
   logic full, empty;
   
-  
+  clocking cb @(posedge clk);
+    default input #1step output #1;
+    output data_in, w_en, r_en;
+    input data_out, full, empty;
+  endclocking
   
 endinterface
   

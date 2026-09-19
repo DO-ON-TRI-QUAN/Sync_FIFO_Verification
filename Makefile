@@ -7,20 +7,27 @@ TOP_TB = sync_fifo_TB
 RTL_FILES := $(wildcard $(RTL_DIR)/*.v $(RTL_DIR)/*.sv)
 TB_FILES  := $(wildcard $(TB_DIR)/*.v $(TB_DIR)/*.sv)
 
+# Common Verilator flags
 # -Wno-EOFNEWLINE: disable lint check on mandatory newline after endmodule
 # -Wno-DECLFILENAME: disable lint check on filename has to be same as module name
+VERILATOR_FLAGS = --Wall \
+-Wno-EOFNEWLINE \
+-Wno-DECLFILENAME \
+-Wno-UNUSEDSIGNAL \
+-Wno-UNUSEDPARAM \
+-Wno-UNDRIVEN
 
 # Lint rtl only
 lint_rtl:
-	verilator --lint-only --Wall -Wno-EOFNEWLINE -Wno-DECLFILENAME $(RTL_FILES) --top-module $(TOP_RTL)
+	verilator --lint-only $(VERILATOR_FLAGS) $(RTL_FILES) --top-module $(TOP_RTL)
 
 # Lint both rtl and tb
 lint_tb:
-	verilator --lint-only --Wall -Wno-EOFNEWLINE -Wno-DECLFILENAME $(RTL_FILES) $(TB_FILES) --top-module $(TOP_TB)
+	verilator --lint-only $(VERILATOR_FLAGS) $(RTL_FILES) $(TB_FILES) --top-module $(TOP_TB)
 
 # Elaborate/compile only (no simulation)
 compile:
-	verilator --sv --Wall -Wno-EOFNEWLINE -Wno-DECLFILENAME $(RTL_FILES) $(TB_FILES) --top-module $(TOP_TB) --binary -o sim_out
+	verilator --sv $(VERILATOR_FLAGS) $(RTL_FILES) $(TB_FILES) --top-module $(TOP_TB) --binary -o sim_out
 
 clean:
 	rm -rf obj_dir sim_out
