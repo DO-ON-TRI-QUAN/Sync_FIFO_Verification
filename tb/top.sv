@@ -4,32 +4,35 @@ module sync_fifo_TB;
   parameter DEPTH = 8;
   parameter DATA_WIDTH = 8;
   
-  reg clk, rst_n;
-  reg w_en, r_en;
-  reg [DATA_WIDTH-1:0] data_in;
-
-  wire [DATA_WIDTH-1:0] data_out;
-  wire full, empty;
+  // Local variables of tb top, to supply/drive the input ports of interface and DUT's clk, rst_n
+  bit clk, rst_n;
   
   // Queue to push data_in and pop data_out (for checker)
   reg [DATA_WIDTH-1:0] data_q[$];
   
   // Store popped data from queue for comparing
   reg [DATA_WIDTH-1:0] data;
-
-  // Instantiate DUT
+  
+  // Interface instantiate
+  fifo_if if_inst (
+    .clk   (clk),
+    .rst_n (rst_n)
+  );
+  
+  // DUT instantiate
   synchronous_fifo #(
-    .DEPTH(DEPTH),
-    .DATA_WIDTH(DATA_WIDTH)
-  ) dut (
-    .clk(clk),
-    .rst_n(rst_n),
-    .w_en(w_en),
-    .r_en(r_en),
-    .data_in(data_in),
-    .data_out(data_out),
-    .full(full),
-    .empty(empty)
+    .DEPTH      (DEPTH),
+    .DATA_WIDTH (DATA_WIDTH)
+  ) DUT (
+    .clk       (clk),
+    .rst_n     (rst_n),
+    
+    .data_in   (if_inst.data_in),
+    .data_out  (if_inst.data_out),
+    .w_en      (if_inst.w_en),
+    .r_en 	   (if_inst.r_en),
+    .full 	   (if_inst.full),
+    .empty 	   (if_inst.empty)
   );
 
   // Clock
@@ -38,9 +41,10 @@ module sync_fifo_TB;
   initial begin
     clk = 0;
     rst_n = 0;
-    w_en = 0; 
-    r_en = 0;
-    data_in = 0;
+    
+    if_inst.w_en <= 0; 
+    if_inst.r_en <= 0;
+    if_inst.data_in <= 0;
 
     
     @(posedge clk) 
@@ -49,38 +53,39 @@ module sync_fifo_TB;
     
     @(posedge clk) 
     #1
-    w_en = 1;
-    r_en = 0;
-    data_in = DATA_WIDTH'($urandom);
-    data_q.push_back(data_in);
+    if_inst.w_en <= 1;
+    if_inst.r_en <= 0;
+    if_inst.data_in <= DATA_WIDTH'($urandom);
+    #1
+    data_q.push_back(if_inst.data_in);
 
     @(posedge clk) 
     #1
-    w_en = 0;
-    r_en = 1; 
+    if_inst.w_en <= 0;
+    if_inst.r_en <= 1; 
     
     @(posedge clk) 
     #1 
     data = data_q.pop_front();
-    if (data_out !== data)
-      $error("TIME = %0t: Comparison failed, expected data = %h, actual data_out = %h", $time, data, data_out);
+    if (if_inst.data_out !== data)
+      $error("TIME = %0t: Comparison failed, expected data = %h, actual data_out = %h", $time, data, if_inst.data_out);
     else
-      $display("TIME = %0t: Comparison passed, expected data = %h, actual data_out = %h", $time, data, data_out);
+      $display("TIME = %0t: Comparison passed, expected data = %h, actual data_out = %h", $time, data, if_inst.data_out);
     
     repeat(12) begin
       @(posedge clk) 
       #1
-      w_en = 1;
-      r_en = 0;
-      data_in = DATA_WIDTH'($urandom);
+      if_inst.w_en <= 1;
+      if_inst.r_en <= 0;
+      if_inst.data_in <= DATA_WIDTH'($urandom);
     end  
     
     repeat(12) begin
       #1
       @(posedge clk) 
-      w_en = 0;
-      r_en = 1;
-      data_in = DATA_WIDTH'($urandom);
+      if_inst.w_en <= 0;
+      if_inst.r_en <= 1;
+      if_inst.data_in <= DATA_WIDTH'($urandom);
     end    
 
     #30
