@@ -15,7 +15,8 @@ VERILATOR_FLAGS = --Wall \
 -Wno-DECLFILENAME \
 -Wno-UNUSEDSIGNAL \
 -Wno-UNUSEDPARAM \
--Wno-UNDRIVEN
+-Wno-UNDRIVEN \
+-Wno-VARHIDDEN
 
 # Lint rtl only
 lint_rtl:
