@@ -1,7 +1,7 @@
-# Synchronous FIFO — Design Verification Project
+# Synchronous FIFO Design Verification Project
 
 ## Overview
-A directed-test verification environment for an 8-entry, 8-bit-wide synchronous FIFO (RTL sourced externally, verification self-authored). This is the first project in a personal DV portfolio series, built without UVM — SystemVerilog OOP (classes, interfaces, clocking blocks, assertions, functional coverage) used directly.
+A directed-test verification environment for an 8-entry, 8-bit-wide synchronous FIFO (RTL sourced externally, verification self-implemented). This project is intentionally kept simple, built without UVM. Otherwise, SystemVerilog OOP (classes, interfaces, clocking blocks, assertions, functional coverage) was used directly instead.
 
 ## Project Structure
 ```
