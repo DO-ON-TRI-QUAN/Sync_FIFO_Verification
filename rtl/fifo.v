@@ -13,30 +13,26 @@ module synchronous_fifo #(parameter DEPTH=8, DATA_WIDTH=8) (
   reg [DATA_WIDTH-1:0] fifo[DEPTH];
   reg wrap_around;
   
-  // Set default values on reset.
   always@(posedge clk) begin
-    if(!rst_n) begin
+    // Set default values on reset.
+    if (!rst_n) begin
       w_ptr <= 0; r_ptr <= 0;
       data_out <= 0;
     end
-  end
-  
-  // To write data to FIFO
-  always@(posedge clk) begin
-    if(w_en & !full)begin
-      fifo[w_ptr[PTR_WIDTH-1:0]] <= data_in;
-      w_ptr <= w_ptr + 1;
+    // To write data to FIFO
+    else begin 
+      if(w_en & !full) begin
+        fifo[w_ptr[PTR_WIDTH-1:0]] <= data_in;
+        w_ptr <= w_ptr + 1;
+      end  
+    // To read data from FIFO
+      if (r_en & !empty) begin
+        data_out <= fifo[r_ptr[PTR_WIDTH-1:0]];
+        r_ptr <= r_ptr + 1;
+      end
     end
   end
-  
-  // To read data from FIFO
-  always@(posedge clk) begin
-    if(r_en & !empty) begin
-      data_out <= fifo[r_ptr[PTR_WIDTH-1:0]];
-      r_ptr <= r_ptr + 1;
-    end
-  end
-  
+
   assign wrap_around = w_ptr[PTR_WIDTH] ^ r_ptr[PTR_WIDTH]; // To check if MSB of write and read pointers are different
   
   //Full condition: MSB of write and read pointers are different and remainimg bits are same.

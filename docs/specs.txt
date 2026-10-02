@@ -49,7 +49,3 @@ actual full condition.
 5. Timing 
   - Negative reset (0 = reset, 1 = no reset)
   - Full and empty flag should be combinational for immediate feedback
-
-6. Corner cases and open questions
-  - If the FIFO is currently full, and both write and read operation happen, can both actually occur? 
-What about empty, can both occur? (check online/popular resource?, check RTL implementation?)

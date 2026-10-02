@@ -12,7 +12,7 @@
 
   3.1 Reset behavior
     [ ] TC_RESET_01: after rst_n asserted, empty = 1, full = 0, w_ptr = r_ptr = 0
-    [ ] TC_RESET_02: reset asserted mid-operation (FIFO partial/full) correctly clears state
+    [ ] TC_RESET_02: reset asserted (rst_n deasserted) mid-operation (FIFO partial/full) correctly clears state
     Priority: High 
     Status: Not started
 
@@ -48,10 +48,10 @@
    3.6 Simultaneous read + write
     [ ] TC_SIMUL_01: simultaneous r/w when FIFO is neither full nor empty -> both occur normally
     [ ] TC_SIMUL_02: simultaneous r/w when FIFO is empty -> write occurs, read does not (FIFO becomes non-empty)
-    [ ] TC_SIMUL_03: simultaneous r/w when FIFO is full -> OPEN QUESTION (see section 6 of specs.txt), resolve against RTL behavior first, then write test to confirm intended behavior
+    [ ] TC_SIMUL_03: simultaneous r/w when FIFO is full -> read occurs, write does not (FIFO becomes non-full)
     [ ] TC_SIMUL_04: back-to-back simultaneous r/w for several cycles while FIFO hovers near full/empty boundary
-    Priority: Med (until TC_SIMUL_03 resolved, then High)
-    Status: Blocked due to open question
+    Priority: High
+    Status: Not started
 
    3.7 Full traversal / stress-ish directed cases
     [ ] TC_FULL_TRAVERSAL_01: fill completely, drain completely, repeat for 2-3 cycles, confirm pointers wrap correctly multiple times (to catch wrap-bit bugs)
@@ -65,6 +65,5 @@
    - No multi-clock / async FIFO behavior (this is sync only)
    - No parameter sweeping across different DEPTH/DATA_WIDTH (fixed parameters)
 
-5. Open questions
-   - 3.6.3 (TC_SIMUL_03): simultaneous r/w when full, check RTL, decide expected behavior, update specs.txt + vplan
+ 
 

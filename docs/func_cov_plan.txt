@@ -57,5 +57,3 @@
 3. Not covered / out-of-scope 
   - No data value coverage. data_in values are seen as not very functionally significant for this project (because the FIFO just stores data from data_in)
 
-4. Open questions
-  - Once TC_SIMUL_03 (full + simultaneous r/w) is resolved, confirm whether that changes what "expected" coverage of FULL x BOTH actually means
