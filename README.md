@@ -36,7 +36,7 @@ Out of scope (see vplan.txt section 4): overflow/underflow error signaling, almo
 ## How to Run
 Simulated on EDA Playground (Synopsys VCS) [here](https://www.edaplayground.com/x/Q4pW)
 
-## Key Learning Outcomes
+## Lessons
 - Simulation timing semantics (blocking vs. non-blocking, clocking block input/output skew, assertion sampling regions) caused several misleading failures that turned out to be testbench timing bugs, not DUT bugs. Validating the checker/model against simple known-correct scenarios before building further was essential to catching these early rather than later, when they would be buried under more complexity.
 - Without a monitor, reference-model state (occupancy, coverage sampling) that depended on tasks remembering to update it manually proved fragile and was a repeated source of bugs, ultimately resolved by deriving that state independently and automatically (clocked directly off observed DUT-facing signals) rather than relying on procedural task discipline.
 - Functional coverage caught a genuine testbench sampling-timing bug (coverage sampled after enables were already deasserted) that correctness checks alone had not revealed. This was a good example of coverage validating the testbench's exercising of the DUT, not just the DUT's correctness.
